@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق مواقيت الصلاة</title>
+    <style>
+        /* هنا أضف التنسيق الخاص بك */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        p {
+            font-size: 1em;
+            margin-bottom: 20px;
+            color: #b0b3d6;
+        }
+        select {
+            padding: 10px;
+            width: 100%;
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            background-color: #333;
+            color: #fff;
+            outline: none;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f39c12;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e67e22;
+        }
+        .footer {
+            margin-top: 20px;
+            color: #d3d3d3;
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تطبيق مواقيت الصلاة</h1>
+        <p>حدد محافظتك لمعرفة مواقيت الصلاة:</p>
+        <form id="prayerForm">
+            <select name="governorate" id="governorateSelect" required>
+                <option value="" disabled selected>اختر المحافظة</option>
+                <option value="بغداد">بغداد</option>
+                <option value="البصرة">البصرة</option>
+                <option value="أربيل">أربيل</option>
+                <option value="نينوى">نينوى</option>
+                <option value="صلاح الدين">صلاح الدين</option>
+                <option value="الأنبار">الأنبار</option>
+                <option value="دهوك">دهوك</option>
+                <option value="كركوك">كركوك</option>
+                <option value="المثنى">المثنى</option>
+                <option value="ذي قار">ذي قار</option>
+                <option value="ميسان">ميسان</option>
+                <option value="النجف">النجف</option>
+                <option value="القادسية">القادسية</option>
+                <option value="بابل">بابل</option>
+                <option value="كربلاء">كربلاء</option>
+                <option value="واسط">واسط</option>
+                <option value="السليمانية">السليمانية</option>
+            </select>
+            <button type="submit">عرض المواقيت</button>
+        </form>
+
+        <div id="prayerTimes" style="display: none;">
+            <h2>مواقيت الصلاة في <span id="selectedGovernorate"></span></h2>
+            <ul>
+                <li>الفجر: <span id="fajr"></span></li>
+                <li>الظهر: <span id="dhuhr"></span></li>
+                <li>العصر: <span id="asr"></span></li>
+                <li>المغرب: <span id="maghrib"></span></li>
+                <li>العشاء: <span id="isha"></span></li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>القناة الرئيسة على تيليجرام: <a href="https://t.me/python_35" target="_blank">اضغط هنا</a></p>
+        </div>
+    </div>
+
+    <script>
+        // فتح المودال
+        function openModal() {
+            document.getElementById("infoModal").style.display = "block";
+        }
+
+        // إغلاق المودال
+        function closeModal() {
+            document.getElementById("infoModal").style.display = "none";
+        }
+
+        // إغلاق المودال عند النقر خارج النافذة
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("infoModal")) {
+                closeModal();
+            }
+        }
+
+        // جلب مواقيت الصلاة بناءً على المحافظة المحددة
+        document.getElementById('prayerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const governorate = document.getElementById('governorateSelect').value;
+            fetch(`http://api.aladhan.com/v1/timingsByCity?city=${governorate}&country=Iraq&method=4`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const prayerTimes = data.data.timings;
+                        document.getElementById('selectedGovernorate').textContent = governorate;
+                        document.getElementById('fajr').textContent = prayerTimes.Fajr;
+                        document.getElementById('dhuhr').textContent = prayerTimes.Dhuhr;
+                        document.getElementById('asr').textContent = prayerTimes.Asr;
+                        document.getElementById('maghrib').textContent = prayerTimes.Maghrib;
+                        document.getElementById('isha').textContent = prayerTimes.Isha;
+                        document.getElementById('prayerTimes').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    alert('حدث خطأ في جلب المواقيت');
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+</html>
